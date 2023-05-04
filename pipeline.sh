@@ -66,12 +66,12 @@ function whisper {
 }
 
 function prep_dataset_speaker {
-  python3 tools/prep_speaker.py "$1"
+  python3 tools/prep_dataset_speaker.py "$1"
 }
 
 #split_audio "audio/0input" "audio/1split"
 #get_speaker "audio/1split" "audio/2speaker"
-cut_music "audio/2speaker/209be_000"
+#cut_music "audio/2speaker/209be_000"
 #rnn_normalize "audio/2speaker" "audio/3rnn"
 #whisper "audio/3rnn/normalized"
-#prep_dataset_speaker "audio/3rnn/normalized"
+prep_dataset_speaker "audio/3rnn/normalized"
