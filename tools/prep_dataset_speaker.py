@@ -11,12 +11,14 @@ def scan_and_delete_empty_files(root_dir):
                     if not f.read().strip():
                         # Text file is empty
                         os.remove(filepath)
-
+                        print(f"Empty file: {filepath}")
                         # Delete associated flac file if present
-                        flac_filepath = filepath.replace(".txt", ".flac")
+                        flac_filepath = filepath.replace(".txt", "_mic1.flac")
+                        print(f"Associated flac file: {flac_filepath}")
                         if os.path.exists(flac_filepath):
                             os.remove(flac_filepath)
-
+                        # # stop execution
+                        # exit()
 
 def get_highest_index(in_dir, extension):
     highest_index = 0
@@ -49,6 +51,7 @@ def collect_files(source_dir, target_wav, target_txt):
                 shutil.copy(filepath, destination)
             elif file.endswith(".txt"):
                 destination = os.path.join(target_txt, f"{prefix}.txt")
+                destination = destination.replace("_mic1.txt", ".txt")
                 shutil.copy(filepath, destination)
 
             if file_pairs.index(
@@ -70,7 +73,6 @@ def main():
 
     # Collect files and move them to new directories
     collect_files(root_dir, target_wav, target_txt)
-
 
 if __name__ == "__main__":
     main()

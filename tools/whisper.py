@@ -58,6 +58,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         input_path = sys.argv[1]
     else:
-        input_path = 'audio/3rnn'  # Default path
+        input_path = 'audio/3rnn/normalized'  # Default path
 
     process_audio_directory(input_path, model)

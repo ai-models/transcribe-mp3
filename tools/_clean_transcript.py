@@ -66,7 +66,7 @@ def handle_whisper(string):
             if word in special_cases:
                 return special_cases[word]
             else:
-                return '-'.join([phonetic_mapping[letter] for letter in word])
+                return ' '.join([phonetic_mapping[letter] for letter in word])
 
         string = re.sub(r'([A-Z]{2,})', replace, string)
 
