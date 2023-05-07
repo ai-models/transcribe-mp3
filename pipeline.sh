@@ -16,7 +16,7 @@ function get_speaker {
 }
 
 function cut_music {
-  python3 tools/_cut_music.py "$1" "$2"
+  python3 tools/check_music.py "$1" "$2"
 }
 
 function rnn_normalize {
@@ -52,7 +52,7 @@ function rnn_normalize {
       for wav in "$rnnoise_output_dir"/*.wav; do
         filename=$(basename "$wav")
         output_path="$normalize_output_dir/${filename%.*}.flac"
-        ffmpeg-normalize "$wav" -c:a flac -f -nt rms -t -27  -o "$output_path" -ar 16000
+        ffmpeg-normalize "$wav" -c:a flac -f -nt rms -t -25  -o "$output_path" -ar 16000
       done
 
       echo "Finished normalizing files in $rnnoise_output_dir"
@@ -62,16 +62,20 @@ function rnn_normalize {
 }
 
 function whisper {
-  python3 tools/whisper.py
+  python3 tools/whisper.py "$1"
 }
 
 function prep_dataset_speaker {
   python3 tools/prep_dataset_speaker.py "$1"
 }
 
+function rnn_normalize_two {
+  python3 tools/rnn_normalize.py
+}
+
 #split_audio "audio/0input" "audio/1split"
 #get_speaker "audio/1split" "audio/2speaker"
-#cut_music "audio/2speaker/209be_000"
-#rnn_normalize "audio/2speaker" "audio/3rnn"
-#whisper "audio/3rnn/normalized"
-prep_dataset_speaker "audio/3rnn/normalized"
+#cut_music "audio/2speaker"
+#rnn_normalize_two "audio/2speaker" "audio/3rnn"
+#whisper "test/wav48_silence_trimmed"
+prep_dataset_speaker "test/wav48_silence_trimmed"

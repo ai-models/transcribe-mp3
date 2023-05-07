@@ -1,4 +1,5 @@
 import os
+import random
 import sys
 import subprocess
 from pyannote.audio import Pipeline
@@ -9,11 +10,11 @@ from scipy.spatial.distance import cdist
 from pyannote.audio.pipelines.speaker_verification import PretrainedSpeakerEmbedding
 from pyannote.audio import Audio
 from pyannote.core import Segment
-from tools.read_config import read_config
+from read_config import read_config
 
 pyannote_token = read_config()["hf_key"]
 # Constants
-distance_threshold = 0.40
+distance_threshold = 0.45
 input_dir = sys.argv[1]
 output_dir = sys.argv[2]
 
@@ -56,8 +57,9 @@ def process_ground_truth(ground_truth_file, input_path, output_path):
             seg = track[t1:t2]
             # get random number between 200 and 300 - variate lengths of output for better training
             # the more input files, the more random the lengths will be
-            # rand = 200 + int(os.urandom(1).hex(), 16) % 100 # gpt's wild way to generate random numbers
-            chunks = split_on_silence(seg, min_silence_len=300, silence_thresh=-40, keep_silence=300)
+            rand = random.randint(2, 5) * 100
+            # get random number 200 and 500
+            chunks = split_on_silence(seg, min_silence_len=rand, silence_thresh=-40, keep_silence=300)
             for i, chunk in enumerate(chunks):
                 outfile = f"{speaker}-{SEG_C}-{i}.wav"
                 output_file = os.path.join(output_path, outfile)

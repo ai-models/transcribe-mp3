@@ -4,21 +4,11 @@ import locale
 import re
 
 import whisperx
-from _clean_transcript import handle_whisper
+# from _clean_transcript import handle_whisper
 
 locale.getpreferredencoding = lambda: "UTF-8"
 
-def process_audio_directory(input_path, model, audio_file_language='English'):
-    num_pattern = re.compile(r'\d+')
-
-    # in whisperx.transcribe, we have changed initial prompt to pass prompt each time
-    #
-    # initial_prompt = decode_options.get("initial_prompt", [])
-    # if initial_prompt:
-    #     initial_prompt = tokenizer.encode(" " + initial_prompt.strip())
-    #     all_tokens.extend(initial_prompt)
-
-
+def process_audio_directory(input_path, model):
     for root, dirs, files in os.walk(input_path):
         print(f"Processing {root}...")
         for audio_file_name in files:
@@ -42,13 +32,13 @@ def process_audio_directory(input_path, model, audio_file_language='English'):
                         if i < len(result['segments']) - 1:
                             combined_text += ' '
 
-                    code, response = handle_whisper(combined_text)
-                    combined_text = response
-
-                    if code == 1:  # If there are non white-listed characters
-                        f.write(combined_text + ' ')
-                    elif code == 500:  # If string is empty
-                        print(f'File is empty, deleting {audio_file_name}')
+                    # code, response = handle_whisper(combined_text)
+                    # combined_text = response
+                    f.write(combined_text)
+                    # if code == 1:  # If there are non white-listed characters
+                    #     f.write(combined_text + ' ')
+                    # elif code == 500:  # If string is empty
+                    #     print(f'File is empty, deleting {audio_file_name}')
 
 
 if __name__ == "__main__":
@@ -57,7 +47,4 @@ if __name__ == "__main__":
 
     if len(sys.argv) > 1:
         input_path = sys.argv[1]
-    else:
-        input_path = 'audio/3rnn/normalized'  # Default path
-
     process_audio_directory(input_path, model)

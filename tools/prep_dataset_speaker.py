@@ -60,7 +60,7 @@ def collect_files(source_dir, target_wav, target_txt):
 
 
 def main():
-    root_dir = "audio/3rnn/normalized"
+    root_dir = "test/wav48_silence_trimmed/p001"
     target_wav = "audio/dataset/wav48_silence_trimmed/p001"
     target_txt = "audio/dataset/txt/p001"
 

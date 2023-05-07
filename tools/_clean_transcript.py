@@ -1,6 +1,7 @@
 import inflect
 import re
 
+import os
 
 def handle_whisper(string):
     # If string is empty
@@ -39,7 +40,7 @@ def handle_whisper(string):
         "Q": "cue",
         "R": "ar",
         "S": "ess",
-        "T": "tee",
+        "T": "tea",
         "U": "you",
         "V": "vee",
         "W": "double-you",
@@ -55,7 +56,7 @@ def handle_whisper(string):
 
         # special cases
         special_cases = {
-            'ISIS': 'eyesus',
+            'ISIS': 'eyesys',
             'III': 'three',
             'ATT': 'ayyteean-tee',
             'IPhone': 'eye-phone',
@@ -70,7 +71,7 @@ def handle_whisper(string):
 
         string = re.sub(r'([A-Z]{2,})', replace, string)
 
-    string = string.replace('...', '')
+    string = string.replace('...', '.')
 
     # Replace numbers with words using inflect
     p = inflect.engine()
@@ -94,3 +95,32 @@ def handle_whisper(string):
     code = 1
     response = filtered_string
     return code, response
+
+def load_whisper_files(directory):
+    # Iterate through all .txt files in the given directory
+    for dirname in os.listdir(directory):
+        for filename in os.listdir(directory+'/'+dirname):
+            if filename.endswith('.txt'):
+                print(f'Processing {filename}')
+
+                filepath = os.path.join(directory+'/'+dirname, filename)
+
+                # Open the file and read its contents
+                with open(filepath, 'r') as f:
+                    contents = f.read()
+
+                # Process the contents using the handle_whisper function
+                code, response = handle_whisper(contents)
+                # print(response)
+                # If handle_whisper returns something different, update the file
+                if code == 1 and response != contents:
+                    with open(filepath, 'w') as f:
+                        f.write(response)
+                if code == 500:
+                    os.remove(filepath)
+                    # Remove the corresponding audio file
+                    audio_filepath = filepath.replace('.txt', '_mic1.flac')
+                    os.remove(audio_filepath)
+                    print(response)
+                    print(f'Removed {filepath}')
+load_whisper_files('test/wav48_silence_trimmed')
