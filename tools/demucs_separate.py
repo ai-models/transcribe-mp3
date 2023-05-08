@@ -204,7 +204,7 @@ def main():
 
     # Loop over each track and append its summary to the list
     for track, vocal_energy, noise_energy, vocal_energy2, noise_energy2 in energy_summary:
-        print(track, vocal_energy, noise_energy, vocal_energy2, noise_energy2)
+        # print(track, vocal_energy, noise_energy, vocal_energy2, noise_energy2)
         difference = abs(noise_energy - vocal_energy2)
         if difference > 0.002:
             energy_summary_list.append({

@@ -76,6 +76,6 @@ function rnn_normalize_two {
 #split_audio "audio/0input" "audio/1split"
 #rnn_normalize_two "audio/1split" "audio/2rnn"
 #get_speaker "audio/2rnn" "audio/3speaker"
-cut_music "audio/3speaker"
+cut_music "audio/3speaker/538bc_004"
 #whisper "test/wav48_silence_trimmed"
 #prep_dataset_speaker "test/wav48_silence_trimmed"
