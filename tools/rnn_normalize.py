@@ -1,17 +1,19 @@
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import soundfile as sf
 import pyloudnorm as pyln
 
-input_dir = "audio/2speaker"
-output_dir = "audio/3rnn_normalize"
+input_dir = sys.argv[1]
+output_dir = sys.argv[2]
+
 rnn = '/home/iguana/projects/python/rnnoise/examples/rnnoise_demo'
 
 for root, dirs, files in os.walk(input_dir):
     for name in files:
-        if not name.endswith(".wav"):
+        if not name.endswith("wav"):
             continue
 
         filepath = os.path.join(root, name)

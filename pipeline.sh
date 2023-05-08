@@ -70,12 +70,12 @@ function prep_dataset_speaker {
 }
 
 function rnn_normalize_two {
-  python3 tools/rnn_normalize.py
+  python3 tools/rnn_normalize.py "$1" "$2"
 }
 
 #split_audio "audio/0input" "audio/1split"
-#get_speaker "audio/1split" "audio/2speaker"
-#cut_music "audio/2speaker"
-#rnn_normalize_two "audio/2speaker" "audio/3rnn"
+#rnn_normalize_two "audio/1split" "audio/2rnn"
+#get_speaker "audio/2rnn" "audio/3speaker"
+cut_music "audio/3speaker"
 #whisper "test/wav48_silence_trimmed"
-prep_dataset_speaker "test/wav48_silence_trimmed"
+#prep_dataset_speaker "test/wav48_silence_trimmed"
