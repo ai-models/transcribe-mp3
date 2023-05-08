@@ -1,7 +1,8 @@
-import inflect
+import os
 import re
 
-import os
+import inflect
+
 
 def handle_whisper(string):
     # If string is empty

@@ -3,8 +3,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-import soundfile as sf
 import pyloudnorm as pyln
+import soundfile as sf
 
 input_dir = sys.argv[1]
 output_dir = sys.argv[2]

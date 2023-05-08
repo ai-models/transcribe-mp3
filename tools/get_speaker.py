@@ -1,15 +1,17 @@
 import os
 import random
-import sys
 import subprocess
+import sys
+
+import torch
+from pyannote.audio import Audio
 from pyannote.audio import Pipeline
+from pyannote.audio.pipelines.speaker_verification import PretrainedSpeakerEmbedding
+from pyannote.core import Segment
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
-import torch
 from scipy.spatial.distance import cdist
-from pyannote.audio.pipelines.speaker_verification import PretrainedSpeakerEmbedding
-from pyannote.audio import Audio
-from pyannote.core import Segment
+
 from read_config import read_config
 
 pyannote_token = read_config()["hf_key"]
@@ -60,9 +62,28 @@ def process_ground_truth(ground_truth_file, input_path, output_path):
             rand = random.randint(2, 5) * 100
             # get random number 200 and 500
             chunks = split_on_silence(seg, min_silence_len=rand, silence_thresh=-40, keep_silence=300)
+            new_chunks = []
             for i, chunk in enumerate(chunks):
-                outfile = f"{speaker}-{SEG_C}-{i}.wav"
+                chunk_len = len(chunk) / 1000  # in seconds
+                if chunk_len <= 10:
+                    new_chunks.append(chunk)
+                else:
+                    # Further split the chunk if it's longer than 10 seconds
+                    sub_chunks = split_on_silence(chunk, min_silence_len=200, silence_thresh=-40, keep_silence=200)
+                    for j, sub_chunk in enumerate(sub_chunks):
+                        sub_chunk_len = len(sub_chunk) / 1000  # in seconds
+                        if sub_chunk_len <= 10:
+                            new_chunks.append(sub_chunk)
+                        else:
+                            # Further split the sub-chunk if it's longer than 10 seconds
+                            sub_sub_chunks = split_on_silence(sub_chunk, min_silence_len=200, silence_thresh=-40,
+                                                              keep_silence=200)
+                            new_chunks.extend(sub_sub_chunks)
+            for j, chunk in enumerate(new_chunks):
+                outfile = f"{speaker}-{SEG_C}-{i}-{j}.wav"
                 output_file = os.path.join(output_path, outfile)
+                chunk.export(output_file, format="wav")
+
                 # todo: maybe don't need to export to file here, just get embedding from chunk
                 # todo: could better utilize memory to hold files, disk writing is a lot of time
                 # todo: but makes it easier to debug.

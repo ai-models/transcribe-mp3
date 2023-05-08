@@ -1,7 +1,7 @@
 import json
-import subprocess
 import os
 import shutil
+import subprocess
 import sys
 
 PATH_TO_AUDIO_FILE_1 = sys.argv[1] # replace with the path to your audio file

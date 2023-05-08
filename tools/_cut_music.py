@@ -3,8 +3,8 @@ import os
 import sys
 
 import resampy
-import webrtcvad
 import soundfile
+import webrtcvad
 
 
 class Frame(object):

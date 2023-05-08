@@ -24,20 +24,18 @@
 # SOFTWARE.
 import argparse
 import glob
-import json
 import os
+import subprocess
 import sys
 from pathlib import Path
-import subprocess
 
-import numpy as np
-from dora.log import fatal
 import torch as th
 import torchaudio as ta
-
 from demucs.apply import apply_model, BagOfModels
-from demucs.audio import AudioFile, convert_audio, save_audio
+from demucs.audio import AudioFile, convert_audio
 from demucs.pretrained import get_model_from_args, add_model_flags, ModelLoadingError
+from dora.log import fatal
+
 
 def compute_rms_energy(audio_tensor):
     energy = th.sqrt(th.mean(audio_tensor ** 2))

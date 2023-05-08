@@ -2,9 +2,7 @@ import locale
 import os
 import sys
 
-import whisperx
-
-# from _clean_transcript import handle_whisper
+from faster_whisper import WhisperModel
 
 locale.getpreferredencoding = lambda: "UTF-8"
 
@@ -14,7 +12,7 @@ def process_audio_directory(input_path, model):
         for audio_file_name in files:
             if audio_file_name.endswith('.flac'):
                 audio_path = os.path.join(root, audio_file_name)
-                result = whisperx.transcribe(model, audio_path, initial_prompt="uh, um, like, you know")
+                segments, info = model.transcribe(audio_path, beam_size=5)
                 txt_file_name = os.path.splitext(audio_file_name)[0] + '.txt'
                 txt_path = os.path.join(root, txt_file_name)
                 # remove _mic1 from the file name
@@ -24,26 +22,21 @@ def process_audio_directory(input_path, model):
                     combined_text = ""
 
                     # Iterate through the list of segments and extract the "text" value from each
-                    for i, segments in enumerate(result['segments']):
-                        text = segments['text'].strip().replace('\n', ' ')
+                    for i, segment in enumerate(segments):
+                        text = segment.text.strip().replace('\n', ' ')
                         combined_text += text
 
                         # Add a space between concatenated segments unconditionally
-                        if i < len(result['segments']) - 1:
+                        if i < len(segments) - 1:
                             combined_text += ' '
 
-                    # code, response = handle_whisper(combined_text)
-                    # combined_text = response
                     f.write(combined_text)
-                    # if code == 1:  # If there are non white-listed characters
-                    #     f.write(combined_text + ' ')
-                    # elif code == 500:  # If string is empty
-                    #     print(f'File is empty, deleting {audio_file_name}')
-
 
 if __name__ == "__main__":
-    model_name = 'large-v2'
-    model = whisperx.load_model(model_name)
+    model_size = "large-v2"
+    device = "cuda"  # change to "cpu" if using CPU
+    compute_type = "float16"  # change to "int8_float16" if using INT8
+    model = WhisperModel(model_size, device=device, compute_type=compute_type)
 
     if len(sys.argv) > 1:
         input_path = sys.argv[1]
