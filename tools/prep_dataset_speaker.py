@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 
 
 def scan_and_delete_empty_files(root_dir):
@@ -60,7 +61,8 @@ def collect_files(source_dir, target_wav, target_txt):
 
 
 def main():
-    root_dir = "test/wav48_silence_trimmed/p001"
+    root_dir = sys.argv[1]
+    # root_dir = "test/wav48_silence_trimmed/p001"
     target_wav = "audio/dataset/wav48_silence_trimmed/p001"
     target_txt = "audio/dataset/txt/p001"
 

@@ -57,39 +57,19 @@ def process_ground_truth(ground_truth_file, input_path, output_path):
             t1 = int(start_time * 1000)
             t2 = int(end_time * 1000)
             seg = track[t1:t2]
-            # get random number between 200 and 300 - variate lengths of output for better training
-            # the more input files, the more random the lengths will be
-            rand = random.randint(2, 5) * 100
-            # get random number 200 and 500
-            chunks = split_on_silence(seg, min_silence_len=rand, silence_thresh=-40, keep_silence=300)
-            new_chunks = []
+
+            chunks = split_on_silence(seg, min_silence_len=100, silence_thresh=-40, keep_silence=False)
             for i, chunk in enumerate(chunks):
-                chunk_len = len(chunk) / 1000  # in seconds
-                if chunk_len <= 10:
-                    new_chunks.append(chunk)
-                else:
-                    # Further split the chunk if it's longer than 10 seconds
-                    sub_chunks = split_on_silence(chunk, min_silence_len=200, silence_thresh=-40, keep_silence=200)
-                    for j, sub_chunk in enumerate(sub_chunks):
-                        sub_chunk_len = len(sub_chunk) / 1000  # in seconds
-                        if sub_chunk_len <= 10:
-                            new_chunks.append(sub_chunk)
-                        else:
-                            # Further split the sub-chunk if it's longer than 10 seconds
-                            sub_sub_chunks = split_on_silence(sub_chunk, min_silence_len=200, silence_thresh=-40,
-                                                              keep_silence=200)
-                            new_chunks.extend(sub_sub_chunks)
-            for j, chunk in enumerate(new_chunks):
-                outfile = f"{speaker}-{SEG_C}-{i}-{j}.wav"
+                print(f"Processing {input_path} - {speaker} - {i}: {len(chunk)}")
+                outfile = f"{speaker}-{SEG_C}-{i}.wav"
                 output_file = os.path.join(output_path, outfile)
-                chunk.export(output_file, format="wav")
+                chunk.export(output_file, format="wav",parameters=["-ac", "1", "-ar", "16000"])
 
                 # todo: maybe don't need to export to file here, just get embedding from chunk
                 # todo: could better utilize memory to hold files, disk writing is a lot of time
                 # todo: but makes it easier to debug.
                 # todo: maybe use multiprocessing queue to speed up the process
                 # todo: also, diarization speaker labels could be checked to 'move on'
-                chunk.export(output_file, format="wav", parameters=["-ac", "1", "-ar", "16000"])
                 distance = cdist(ground_truth_embedding, get_embedding(output_file), metric="cosine")
 
                 if distance <= distance_threshold:

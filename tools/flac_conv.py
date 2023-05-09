@@ -1,9 +1,11 @@
 import os
 import shutil
 import subprocess
+import sys
 
-input_dir = "audio/3rnn_normalize"
-output_dir = "audio/4flac"
+
+input_dir = sys.argv[1]
+output_dir = sys.argv[2]
 
 
 for root, dirs, files in os.walk(input_dir):

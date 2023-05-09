@@ -10,9 +10,9 @@ def process_audio_directory(input_path, model):
     for root, dirs, files in os.walk(input_path):
         print(f"Processing {root}...")
         for audio_file_name in files:
-            if audio_file_name.endswith('.flac'):
+            if audio_file_name.endswith('.wav'):
                 audio_path = os.path.join(root, audio_file_name)
-                segments, info = model.transcribe(audio_path, beam_size=5)
+                segments, info = model.transcribe(audio_path, beam_size=1)
                 txt_file_name = os.path.splitext(audio_file_name)[0] + '.txt'
                 txt_path = os.path.join(root, txt_file_name)
                 # remove _mic1 from the file name
@@ -27,16 +27,16 @@ def process_audio_directory(input_path, model):
                         combined_text += text
 
                         # Add a space between concatenated segments unconditionally
-                        if i < len(segments) - 1:
+                        if i < sum(1 for _ in segments) - 1:
                             combined_text += ' '
 
                     f.write(combined_text)
 
 if __name__ == "__main__":
-    model_size = "large-v2"
+    model_size = "medium.en"
     device = "cuda"  # change to "cpu" if using CPU
     compute_type = "float16"  # change to "int8_float16" if using INT8
-    model = WhisperModel(model_size, device=device, compute_type=compute_type)
+    model = WhisperModel(model_size, device=device, compute_type=compute_type, local_files_only=True)
 
     if len(sys.argv) > 1:
         input_path = sys.argv[1]

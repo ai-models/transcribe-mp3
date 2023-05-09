@@ -12,7 +12,7 @@ def process_audio_directory(input_path, model):
     for root, dirs, files in os.walk(input_path):
         print(f"Processing {root}...")
         for audio_file_name in files:
-            if audio_file_name.endswith('.flac'):
+            if audio_file_name.endswith('.wav'):
                 audio_path = os.path.join(root, audio_file_name)
                 result = whisperx.transcribe(model, audio_path, initial_prompt="uh, um, like, you know")
                 txt_file_name = os.path.splitext(audio_file_name)[0] + '.txt'
