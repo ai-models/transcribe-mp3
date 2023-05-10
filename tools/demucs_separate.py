@@ -24,6 +24,7 @@
 # SOFTWARE.
 import argparse
 import glob
+import json
 import os
 import subprocess
 import sys
@@ -162,8 +163,14 @@ def main():
     model.cpu()
     model.eval()
 
-    wav_files = glob.glob(os.path.join(str(args.tracks), "**", "*.wav"), recursive=True)
-
+    path_parts = str(args.tracks).split(os.path.sep)
+    if len(path_parts) == 2:
+        wav_files = glob.glob(os.path.join(str(args.tracks), "**", "*.wav"), recursive=True)
+    elif len(path_parts) == 3:
+        wav_files = glob.glob(os.path.join(str(args.tracks), "*.wav"))
+    else:
+        print("Invalid path: must be either a directory with subdirectories or a directory with WAV files.")
+        return    print(f"Found {len(wav_files)} files to separate.")
     if not wav_files:
         print("No WAV files found in the specified directory.")
         return
@@ -177,43 +184,38 @@ def main():
         ref = wav.mean(0)
         wav = (wav - ref.mean()) / ref.std()
         sources = apply_model(model, wav[None], device=args.device, shifts=args.shifts,
-                              split=args.split, overlap=args.overlap, progress=True,
+                              split=args.split, overlap=args.overlap, progress=False,
                               num_workers=args.jobs)[0]
         sources = sources * ref.std() + ref.mean()
 
         # Assuming sources[0] contains vocals, and sources[1] contains other noise
         vocal_energy = compute_rms_energy(sources[0])
         noise_energy = compute_rms_energy(sources[1])
-        vocal_energy2 = compute_rms_energy(sources[2])
+        background_music = compute_rms_energy(sources[2])
         noise_energy2 = compute_rms_energy(sources[3])
-        energy_summary.append((track, vocal_energy, noise_energy, vocal_energy2, noise_energy2))
+        energy_summary.append((track, vocal_energy, noise_energy, background_music, noise_energy2))
 
-    # Print the energy summary for all tracks
-    # Print the energy summary for all tracks with a difference greater than 0.001
-    # print("\nTrack Energy Summary (Difference > 0.001):")
-    # print(f"{'Track':<30s} {'0 ':<15s} {'1':<15s} {'2':<15s} {'3':<15s}")
-    # for track, vocal_energy, noise_energy, vocal_energy2, noise_energy2 in energy_summary:
-    #     difference = abs(noise_energy - vocal_energy2)
-    #     if difference > 0.002:
-    #         print(f"{str(track):<30s} \t {difference} {vocal_energy:<15.6f} {noise_energy:<15.6f} {vocal_energy2:<15.6f} {noise_energy2:<15.6f}")
-    #
-    # Initialize an empty list to store the results
     energy_summary_list = []
 
     # Loop over each track and append its summary to the list
-    for track, vocal_energy, noise_energy, vocal_energy2, noise_energy2 in energy_summary:
-        # print(track, vocal_energy, noise_energy, vocal_energy2, noise_energy2)
-        difference = abs(noise_energy - vocal_energy2)
-        if difference > 0.002:
+    for track, vocal_energy, noise_energy, background_music, noise_energy2 in energy_summary:
+        # print(track, vocal_energy, noise_energy, background_music, noise_energy2)
+        difference = abs(vocal_energy - background_music)
+        if (difference > 0.0008):
             energy_summary_list.append({
                 "track": str(track),
                 "difference": difference,
                 "vocal_energy": vocal_energy,
                 "noise_energy": noise_energy,
-                "vocal_energy2": vocal_energy2,
+                "background_music": background_music,
                 "noise_energy2": noise_energy2
             })
     # Convert the list to a JSON string
+    # save energy summary list to a file
+    with open('energy_summary_list.json', 'w') as f:
+        f.write(str(energy_summary))
+    # Print the JSON string to the console
+
     print(energy_summary_list)
 
 

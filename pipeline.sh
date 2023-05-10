@@ -43,13 +43,13 @@ function text_cleanup {
   python3 tools/_clean_transcript.py "$1"
 }
 
-split_audio "audio/0input" "audio/1split"
-get_speaker "audio/1split" "audio/2speaker"
-rnn_normalize "audio/2speaker" "audio/3rnn_normalize"
+#split_audio "audio/0input" "audio/1split"
+#get_speaker "audio/1split" "audio/2speaker"
+#rnn_normalize "audio/2speaker" "audio/3rnn_normalize"
 cut_music "audio/3rnn_normalize"
-fast_whisper "audio/3rnn_normalize"
-flac_convert "audio/3rnn_normalize" "audio/4flac"
-text_cleanup "audio/4flac"
-prep_dataset_speaker "audio/4flac"
+#fast_whisper "audio/3rnn_normalize"
+#flac_convert "audio/3rnn_normalize" "audio/4flac"
+#text_cleanup "audio/4flac"
+#prep_dataset_speaker "audio/4flac"
 
 

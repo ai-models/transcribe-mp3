@@ -1,5 +1,4 @@
 import os
-import random
 import subprocess
 import sys
 
@@ -16,7 +15,7 @@ from read_config import read_config
 
 pyannote_token = read_config()["hf_key"]
 # Constants
-distance_threshold = 0.45
+distance_threshold = 0.40
 input_dir = sys.argv[1]
 output_dir = sys.argv[2]
 
@@ -27,6 +26,7 @@ MODEL = PretrainedSpeakerEmbedding("speechbrain/spkrec-ecapa-voxceleb", device=t
 
 # Audio
 AUDIO = Audio(sample_rate=16000, mono="downmix")
+
 
 # Functions
 def audio_len(audio_file):
@@ -40,9 +40,8 @@ def get_embedding(audio_file):
     return MODEL(waveform[None])
 
 
-def process_ground_truth(ground_truth_file, input_path, output_path):
-    print(f"Processing {input_path}...")
-    ground_truth_embedding = get_embedding(ground_truth_file)
+def process_ground_truth(ground_truth_embedding, input_path, output_path):
+    print(f"Processing ground truth: {input_path}...")
 
     diarization = PIPELINE(input_path)
     track = AudioSegment.from_wav(input_path)
@@ -58,19 +57,14 @@ def process_ground_truth(ground_truth_file, input_path, output_path):
             t2 = int(end_time * 1000)
             seg = track[t1:t2]
 
-            chunks = split_on_silence(seg, min_silence_len=100, silence_thresh=-40, keep_silence=False)
+            chunks = split_on_silence(seg, min_silence_len=200, silence_thresh=-40, keep_silence=100)
             for i, chunk in enumerate(chunks):
-                print(f"Processing {input_path} - {speaker} - {i}: {len(chunk)}")
                 outfile = f"{speaker}-{SEG_C}-{i}.wav"
                 output_file = os.path.join(output_path, outfile)
-                chunk.export(output_file, format="wav",parameters=["-ac", "1", "-ar", "16000"])
+                chunk.export(output_file, format="wav", parameters=["-ac", "1", "-ar", "16000"])
 
-                # todo: maybe don't need to export to file here, just get embedding from chunk
-                # todo: could better utilize memory to hold files, disk writing is a lot of time
-                # todo: but makes it easier to debug.
-                # todo: maybe use multiprocessing queue to speed up the process
-                # todo: also, diarization speaker labels could be checked to 'move on'
                 distance = cdist(ground_truth_embedding, get_embedding(output_file), metric="cosine")
+                print(f"Processing {input_path} - {speaker} - {i}: Chunks: {len(chunk) - 1} - Distance: {distance}")
 
                 if distance <= distance_threshold:
                     overlap = OVERLAP_PIPELINE(output_file).get_timeline().support()
@@ -79,7 +73,6 @@ def process_ground_truth(ground_truth_file, input_path, output_path):
                         os.remove(output_file)
                     else:
                         match_count += 1
-                        # get last part of sub directory name of output_path
                         dirname = os.path.basename(os.path.normpath(output_path))
                         print(f"Matching Audio [{dirname}]: {match_count}")
                         output_file_name = f"p001_{match_count:05}_mic1.wav"
@@ -92,13 +85,13 @@ def process_ground_truth(ground_truth_file, input_path, output_path):
     return match_count, output_path
 
 
-def main():
+def main(input_dir, output_dir):
     if os.path.exists(output_dir):
         subprocess.run(["rm", "-rf", output_dir])
     subprocess.run(["mkdir", "-p", output_dir])
 
     ground_truth_file = 'audio/0input/ground-truth-speaker/p001_00020_mic1.wav'
-
+    ground_truth_embedding = get_embedding(ground_truth_file)
     matching_files = []
 
     for file_name in os.listdir(input_dir):
@@ -107,10 +100,11 @@ def main():
             output_path = os.path.join(output_dir, os.path.splitext(file_name)[0])
             subprocess.run(["mkdir", "-p", output_path])
 
-            match_count, output_path = process_ground_truth(ground_truth_file, input_path, output_path)
+            match_count, output_path = process_ground_truth(ground_truth_embedding, input_path, output_path)
             if match_count >= 0:
                 matching_file = f"p001_{match_count:05}_mic1.wav"
                 matching_files.append(os.path.join(output_path, matching_file))
 
+
 if __name__ == "__main__":
-    main()
+    main(input_dir, output_dir)

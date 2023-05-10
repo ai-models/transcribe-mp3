@@ -6,11 +6,12 @@ import sys
 
 PATH_TO_AUDIO_FILE_1 = sys.argv[1] # replace with the path to your audio file
 
-command = ["python3", "tools/demucs_separate.py", '--two-stem=vocals', "-n", 'htdemucs_ft', PATH_TO_AUDIO_FILE_1]
+command = ["python3", "tools/demucs_separate.py", '--two-stems', 'vocals', "-n", 'htdemucs_ft', PATH_TO_AUDIO_FILE_1]
+print(command)
 result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 track_list = result.stdout
-# print("#########")
-# print(track_list)
+print("#########")
+print(track_list)
 output = json.loads(track_list.replace("'", "\""))
 
 output_dir = 'audio/discarded'
