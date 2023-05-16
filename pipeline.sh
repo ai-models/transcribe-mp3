@@ -17,6 +17,9 @@ function get_speaker {
   output_sample_rate = "16000"
   min_length_seconds = "2"
   max_length_seconds = "10"
+  min_silence_len = "300"
+  silence_thresh = "-40"
+  keep_silence= "200"
   python3 tools/get_speaker.py "$input_dir" "$output_dir" "$distance_threshold" "$target_speaker" "$sample_rate" "$output_sample_rate" "$min_length_seconds" "$max_length_seconds"
 }
 
@@ -28,7 +31,7 @@ function get_all_speakers {
   min_length_seconds = "2"
   max_length_seconds = "10"
   min_silence_len="300",
-  silence_thresh=-"40",
+  silence_thresh= "-40",
   keep_silence="200"
   python3 tools/get_all_speakers.py "$input_dir" "$output_dir" "$sample_rate" "$output_sample_rate" "$min_length_seconds" "$max_length_seconds" "$min_silence_len" "$silence_thresh" "$keep_silence"
 }

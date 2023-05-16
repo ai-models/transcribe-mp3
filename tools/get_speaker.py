@@ -34,7 +34,8 @@ def get_embedding(audio_file):
     return MODEL(waveform[None])
 
 
-def process_ground_truth(ground_truth_embedding, input_path, output_path, distance_threshold, min_length_seconds, max_length_seconds):
+def process_ground_truth(ground_truth_embedding, input_path, output_path, distance_threshold, min_length_seconds,
+                         max_length_seconds, min_silence_len, silence_thresh, keep_silence):
     print(f"Processing ground truth: {input_path}...")
 
     diarization = PIPELINE(input_path)
@@ -51,11 +52,11 @@ def process_ground_truth(ground_truth_embedding, input_path, output_path, distan
             t2 = int(end_time * 1000)
             seg = track[t1:t2]
 
-            chunks = split_on_silence(seg, min_silence_len=180, silence_thresh=-40, keep_silence=90)
+            chunks = split_on_silence(seg, min_silence_len, silence_thresh, keep_silence)
             new_chunks = []
             for i, chunk in enumerate(chunks):
                 if len(chunk) > max_length_seconds * 1000:
-                    subchunks = split_on_silence(chunk, min_silence_len=100, silence_thresh=-40, keep_silence=100)
+                    subchunks = split_on_silence(chunk, min_silence_len, silence_thresh, keep_silence)
                     new_chunks += subchunks
                 else:
                     new_chunks.append(chunk)
@@ -90,7 +91,8 @@ def process_ground_truth(ground_truth_embedding, input_path, output_path, distan
     return match_count, output_path
 
 
-def main(input_dir, output_dir, distance_threshold, ground_truth_file, sample_rate, output_sample_rate, min_length_seconds, max_length_seconds):
+def main(input_dir, output_dir, distance_threshold, ground_truth_file, sample_rate, output_sample_rate,
+         min_length_seconds, max_length_seconds, min_silence_len, silence_thresh, keep_silence):
     if os.path.exists(output_dir):
         subprocess.run(["rm", "-rf", output_dir])
     subprocess.run(["mkdir", "-p", output_dir])
@@ -125,4 +127,8 @@ if __name__ == "__main__":
     output_sample_rate = sys.argv[6]
     min_length_seconds = sys.argv[7]
     max_length_seconds = sys.argv[8]
-    main(input_dir, output_dir, distance_threshold, ground_truth_file, sample_rate_in, output_sample_rate, min_length_seconds, max_length_seconds, max_length_seconds)
+    min_silence_len = sys.argv[9]
+    silence_thresh = sys.argv[10]
+    keep_silence = sys.argv[11]
+    main(input_dir, output_dir, distance_threshold, ground_truth_file, sample_rate_in, output_sample_rate,
+         min_length_seconds, max_length_seconds, max_length_seconds, min_silence_len, silence_thresh, keep_silence
