@@ -1,6 +1,6 @@
+import glob
 import os
 import shutil
-import glob
 
 
 def copy_files(source_dir, target_wav, target_txt):

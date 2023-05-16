@@ -372,19 +372,18 @@
 #   This Source Code Form is "Incompatible With Secondary Licenses", as
 #   defined by the Mozilla Public License, v. 2.0.
 
+import datetime
+import json
 import os
 import sys
+from collections import Counter
+from multiprocessing import Pool
 
+import librosa
 import numpy as np
 import pandas as pd
-import librosa
-from collections import Counter
 from matplotlib import pyplot as plt
-from scipy.stats import norm
 from tqdm import tqdm
-from multiprocessing import Pool
-import json
-import datetime
 
 
 def formatter(root_path, **kwargs):

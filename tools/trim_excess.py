@@ -1,8 +1,9 @@
-import os
-import numpy as np
-import librosa
 import argparse
 import json
+import os
+
+import librosa
+import numpy as np
 
 
 def trim_excess_audio(audio, sr, text_len, mean_sec_per_char, std_sec_per_char, silence_threshold=-40):

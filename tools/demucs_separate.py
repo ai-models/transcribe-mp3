@@ -30,14 +30,15 @@ import sys
 from pathlib import Path
 
 import librosa
+import scipy.signal
 import torch as th
 import torchaudio as ta
 from demucs.apply import apply_model, BagOfModels
+from demucs.audio import AudioFile, convert_audio
 from demucs.pretrained import get_model_from_args, add_model_flags, ModelLoadingError
 from dora.log import fatal
-from demucs.audio import AudioFile, convert_audio
-import scipy.signal
-import numpy as np
+
+
 def count_peaks(x, threshold_db):
     # Convert threshold from dB to amplitude
     threshold = 10 ** (threshold_db / 20)

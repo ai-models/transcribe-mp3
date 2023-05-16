@@ -3,8 +3,9 @@ import shutil
 import sys
 from pathlib import Path
 
-import soundfile as sf
 import pyloudnorm as pyln
+import soundfile as sf
+
 
 def main(input_dir, output_dir, peak, loudness_val, sample_rate):
     for root, dirs, files in os.walk(input_dir):

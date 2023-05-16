@@ -10,6 +10,7 @@ from pyannote.core import Segment
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 from scipy.spatial.distance import cdist
+
 from read_config import read_config
 
 # Pretrained Models
@@ -131,4 +132,4 @@ if __name__ == "__main__":
     silence_thresh = sys.argv[10]
     keep_silence = sys.argv[11]
     main(input_dir, output_dir, distance_threshold, ground_truth_file, sample_rate_in, output_sample_rate,
-         min_length_seconds, max_length_seconds, max_length_seconds, min_silence_len, silence_thresh, keep_silence
+         min_length_seconds, max_length_seconds, max_length_seconds, min_silence_len, silence_thresh, keep_silence)

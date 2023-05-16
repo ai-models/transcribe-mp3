@@ -1,10 +1,11 @@
 import os
 import subprocess
-
-import requests
 from pathlib import Path
+
 import pyloudnorm as pyln
+import requests
 import soundfile as sf
+
 
 def prepare_vctk(input_folder, output_folder, output_samplerate):
     # Download the vctk-silences file if it doesn't exist
