@@ -3,10 +3,10 @@ import os
 import shutil
 
 
-def copy_files(source_dir, target_wav, target_txt):
+def make_vctk_dataset(source_dir, target_wav, target_txt, speaker_id):
     # Create target directories if they don't exist
-    os.makedirs(os.path.join(target_txt, 'p001'), exist_ok=True)
-    os.makedirs(os.path.join(target_wav, 'p001'), exist_ok=True)
+    os.makedirs(os.path.join(target_txt, speaker_id), exist_ok=True)
+    os.makedirs(os.path.join(target_wav, speaker_id), exist_ok=True)
 
     # Recursively find all txt files in the source directory
     txt_files = glob.glob(os.path.join(source_dir, '**', '*.txt'), recursive=True)
@@ -32,9 +32,9 @@ def copy_files(source_dir, target_wav, target_txt):
             continue
 
         # Get the destination file paths
-        prefix = f"p001_{str(counter).zfill(4)}"
-        dest_txt_file = os.path.join(target_dir, 'txt', 'p001', f"{prefix}.txt")
-        dest_flac_file = os.path.join(target_dir, 'wav48_silence_trimmed', 'p001', f"{prefix}_mic1.flac")
+        prefix = f"{speaker_id}_{str(counter).zfill(4)}"
+        dest_txt_file = os.path.join(target_dir, 'txt', speaker_id, f"{prefix}.txt")
+        dest_flac_file = os.path.join(target_dir, 'wav48_silence_trimmed', speaker_id, f"{prefix}_mic1.flac")
 
         # Copy the files to the destination directory
         shutil.copy(txt_file, dest_txt_file)
@@ -49,4 +49,5 @@ if __name__ == "__main__":
     input_dir = sys.argv[1]
     target_wav = sys.argv[2]
     target_txt = sys.argv[3]
-    copy_files(input_dir, target_wav, target_txt)
+    speaker_id = sys.argv[4]
+    make_vctk_dataset(input_dir, target_wav, target_txt, speaker_id)

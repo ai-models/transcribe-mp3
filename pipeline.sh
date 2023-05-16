@@ -47,7 +47,8 @@ function prep_dataset_speaker {
   input_dir = "$1"
   target_wav = "audio/dataset/wav48_silence_trimmed"
   target_txt = "audio/dataset/txt"
-  python3 tools/dataset_prep.py "$input_dir" "$target_wav" "$target_txt"
+  speaker_id = "p001"
+  python3 tools/dataset_prep.py "$input_dir" "$target_wav" "$target_txt" "$speaker_id"
 }
 
 function rnn_normalize {
