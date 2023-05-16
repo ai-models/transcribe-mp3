@@ -35,8 +35,9 @@ def get_embedding(audio_file):
     return MODEL(waveform[None])
 
 
-def extract_speaker_target(speaker_target_embedding, input_path, output_path, distance_threshold, min_length_seconds,
-                           max_length_seconds, min_silence_len, silence_thresh, keep_silence):
+def extract_speaker_target(speaker_target_embedding, input_path, output_path,
+                distance_threshold,  min_length_seconds, max_length_seconds,
+                output_sample_rate, min_silence_len, silence_thresh, keep_silence):
     print(f"Processing ground truth: {input_path}...")
 
     diarization = PIPELINE(input_path)
@@ -47,47 +48,47 @@ def extract_speaker_target(speaker_target_embedding, input_path, output_path, di
     for turn, _, speaker in diarization.itertracks(yield_label=True):
         start_time = turn.start
         end_time = turn.end
-        length = end_time - start_time
-        if length > min_length_seconds:
-            t1 = int(start_time * 1000)
-            t2 = int(end_time * 1000)
-            seg = track[t1:t2]
 
-            chunks = split_on_silence(seg, min_silence_len, silence_thresh, keep_silence)
-            new_chunks = []
-            for i, chunk in enumerate(chunks):
-                if len(chunk) > max_length_seconds * 1000:
-                    subchunks = split_on_silence(chunk, min_silence_len, silence_thresh, keep_silence)
-                    new_chunks += subchunks
-                else:
-                    new_chunks.append(chunk)
+        t1 = int(start_time * 1000)
+        t2 = int(end_time * 1000)
+        seg = track[t1:t2]
 
-            for i, chunk in enumerate(new_chunks):
-                outfile = f"{speaker}-{SEG_C}-{i}.wav"
-                output_file = os.path.join(output_path, outfile)
-                chunk.export(output_file, format="wav", parameters=["-ac", "1", "-ar", "16000"])
+        chunks = split_on_silence(seg, min_silence_len, silence_thresh, keep_silence)
+        new_chunks = []
+        for i, chunk in enumerate(chunks):
+            if len(chunk) > max_length_seconds * 1000:
+                subchunks = split_on_silence(chunk, min_silence_len, silence_thresh, keep_silence)
+                new_chunks += subchunks
+            else:
+                new_chunks.append(chunk)
 
-                if len(chunk) > max_length_seconds * 1000:
-                    os.remove(output_file)
-                else:
-                    distance = cdist(speaker_target_embedding, get_embedding(output_file), metric="cosine")
-                    print(f"Processing {input_path} - {speaker} - {i}: Chunks: {len(chunk) - 1} - Distance: {distance}")
+        for i, chunk in enumerate(new_chunks):
+            outfile = f"{speaker}-{SEG_C}-{i}.wav"
+            output_file = os.path.join(output_path, outfile)
+            chunk.export(output_file, format="wav", parameters=["-ac", "1", "-ar", str(output_sample_rate)])
 
-                    if distance <= distance_threshold:
-                        overlap = OVERLAP_PIPELINE(output_file).get_timeline().support()
-                        if overlap:
-                            print(f"Skipping {output_file} due to overlapping speech.")
-                            os.remove(output_file)
-                        else:
-                            match_count += 1
-                            dirname = os.path.basename(os.path.normpath(output_path))
-                            print(f"Matching Audio [{dirname}]: {match_count}")
-                            output_file_name = f"p001_{match_count:05}_mic1.wav"
-                            output_file_path = os.path.join(output_path, output_file_name)
-                            os.rename(output_file, output_file_path)
-                    else:
+            if len(chunk) > max_length_seconds * 1000 or len(chunk) < min_length_seconds * 1000:
+                print(f"Skipping {output_file} due to length.")
+                os.remove(output_file)
+            else:
+                distance = cdist(speaker_target_embedding, get_embedding(output_file), metric="cosine")
+                print(f"Processing {input_path} - {speaker} - {i}: Chunks: {len(chunk) - 1} - Distance: {distance}")
+
+                if distance <= distance_threshold:
+                    overlap = OVERLAP_PIPELINE(output_file).get_timeline().support()
+                    if overlap:
+                        print(f"Skipping {output_file} due to overlapping speech.")
                         os.remove(output_file)
-                    SEG_C += 1
+                    else:
+                        match_count += 1
+                        dirname = os.path.basename(os.path.normpath(output_path))
+                        print(f"Matching Audio [{dirname}]: {match_count}")
+                        output_file_name = f"p001_{match_count:05}_mic1.wav"
+                        output_file_path = os.path.join(output_path, output_file_name)
+                        os.rename(output_file, output_file_path)
+                else:
+                    os.remove(output_file)
+                SEG_C += 1
 
     return match_count, output_path
 
@@ -110,6 +111,7 @@ def main(input_dir, output_dir, distance_threshold, speaker_target_file, sample_
             match_count, output_path = extract_speaker_target(
                 speaker_target_embedding, input_path, output_path,
                 distance_threshold,  min_length_seconds, max_length_seconds,
+                sample_rate_in, output_sample_rate,
                 min_silence_len, silence_thresh, keep_silence)
             if match_count >= 0:
                 matching_file = f"p001_{match_count:05}_mic1.wav"

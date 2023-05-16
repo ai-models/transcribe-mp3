@@ -30,53 +30,59 @@ def audio_len(audio_file):
 
 
 def extract_speakers(input_path, output_path, output_sample_rate,
-                         min_length_seconds, max_length_seconds, min_silence_len,
-                         silence_threshold, keep_silence):
+                     min_length_seconds, max_length_seconds, min_silence_len,
+                     silence_threshold, keep_silence):
     print(f"Processing extract speakers: {input_path}...")
 
     diarization = PIPELINE(input_path)
     track = AudioSegment.from_wav(input_path)
     SEG_C = 0
-    match_count = -1
+    match_count = dict()
 
     for turn, _, speaker in diarization.itertracks(yield_label=True):
         start_time = turn.start
         end_time = turn.end
-        length = end_time - start_time
-        if length > min_length_seconds:
-            t1 = int(start_time * 1000)
-            t2 = int(end_time * 1000)
-            seg = track[t1:t2]
 
-            chunks = split_on_silence(seg, min_silence_len, silence_threshold, keep_silence)
-            new_chunks = []
-            for i, chunk in enumerate(chunks):
-                if len(chunk) > max_length_seconds * 1000:
-                    print('Resplitting chunk')
-                    subchunks = split_on_silence(chunk, min_silence_len, silence_threshold, keep_silence)
-                    new_chunks += subchunks
-                else:
-                    new_chunks.append(chunk)
+        # check if speaker directory exists for output
+        speaker_dir = os.path.join(output_path, speaker)
+        if not os.path.exists(speaker_dir):
+            os.makedirs(speaker_dir)
 
-            for i, chunk in enumerate(new_chunks):
-                outfile = f"{speaker}-{SEG_C}-{i}.wav"
-                output_file = os.path.join(output_path, outfile)
-                chunk.export(output_file, format="wav", parameters=["-ac", "1", "-ar", str(output_sample_rate)])
+        if speaker not in match_count:
+            match_count[speaker] = -1
 
-                if len(chunk) > max_length_seconds * 1000: # or len(chunk) < 800:
+        t1 = int(start_time * 1000)
+        t2 = int(end_time * 1000)
+        seg = track[t1:t2]
+
+        chunks = split_on_silence(seg, min_silence_len, silence_threshold, keep_silence)
+        new_chunks = []
+        for i, chunk in enumerate(chunks):
+            if len(chunk) > max_length_seconds * 1000 :
+                print('Resplitting chunk')
+                subchunks = split_on_silence(chunk, min_silence_len, silence_threshold, keep_silence)
+                new_chunks += subchunks
+            else:
+                new_chunks.append(chunk)
+
+        for i, chunk in enumerate(new_chunks):
+            match_count[speaker] += 1
+            outfile = f"{speaker}/{speaker}_{match_count[speaker]}.wav"
+            output_file = os.path.join(output_path, outfile)
+            chunk.export(output_file, format="wav", parameters=["-ac", "1", "-ar", str(output_sample_rate)])
+
+            if len(chunk) > max_length_seconds * 1000 or len(chunk) < min_length_seconds * 1000:
+                print(f"Skipping {output_file} due to length.")
+                os.remove(output_file)
+            else:
+                # print(f"Processing {input_path} - {speaker}/{SEG_C}-{i}")
+                overlap = OVERLAP_PIPELINE(output_file).get_timeline().support()
+                if overlap:
+                    print(f"Skipping {output_file} due to overlapping speech.")
                     os.remove(output_file)
                 else:
-                    print(f"Processing {input_path} - {speaker} - {i}: Chunks: {len(chunk) - 1}")
-
-                    overlap = OVERLAP_PIPELINE(output_file).get_timeline().support()
-                    if overlap:
-                        print(f"Skipping {output_file} due to overlapping speech.")
-                        os.remove(output_file)
-                    else:
-                        match_count += 1
-                        dirname = os.path.basename(os.path.normpath(output_path))
-                        print(f"Matching Audio [{output_file}]: {len(chunk)}")
-                    SEG_C += 1
+                    dirname = os.path.basename(os.path.normpath(output_path))
+                SEG_C += 1
 
     return match_count, output_path
 
