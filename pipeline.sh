@@ -1,6 +1,7 @@
 #!/bin/bash
 
 function split_audio {
+  # Splits audio into separated files for easier processing
   input_dir="$1"
   output_dir="$2"
   segment_time="1000"
@@ -9,6 +10,7 @@ function split_audio {
 }
 
 function get_speaker {
+  # Given a sample of a speaker, extracts an embedding which is compared to other
   input_dir="$1"
   output_dir="$2"
   distance_threshold="0.42"
@@ -20,7 +22,7 @@ function get_speaker {
   min_silence_len = "300"
   silence_thresh = "-40"
   keep_silence= "200"
-  python3 tools/get_speaker.py "$input_dir" "$output_dir" "$distance_threshold" "$target_speaker" "$sample_rate" "$output_sample_rate" "$min_length_seconds" "$max_length_seconds"
+  python3 tools/get_speaker.py "$input_dir" "$output_dir" "$distance_threshold" "$target_speaker" "$sample_rate" "$output_sample_rate" "$min_length_seconds" "$max_length_seconds" "$min_silence_len" "$silence_thresh" "$keep_silence"
 }
 
 function get_all_speakers {
