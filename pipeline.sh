@@ -28,7 +28,6 @@ function get_speaker {
   fi
 }
 
-
 function cut_music {
   input_dir="$1"
   noise_bass_peaks_threshold = "400"
@@ -65,6 +64,7 @@ function deepfilter_clean {
   target_dir = "wav48_silence_trimmed/p001-clean"
   python3 tools/deepfilter_clean.py "$source_dir" "$target_dir"
 }
+
 function flac_convert {
   python3 tools/flac_conv.py "$1" "$2"
 }
@@ -75,6 +75,7 @@ function vctk_normalize_and_trim {
   output_sample_rate = 16000
   python3 tools/vctk_normalize_and_trim.py "$input_dir" "$output_dir" "$output_sample_rate"
 }
+
 function text_cleanup {
   python3 tools/_clean_transcript.py "$1"
 }

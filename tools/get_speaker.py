@@ -35,8 +35,8 @@ def get_embedding(audio_file):
     return MODEL(waveform[None])
 
 
-def process_speaker_target(speaker_target_embedding, input_path, output_path, distance_threshold, min_length_seconds,
-                         max_length_seconds, min_silence_len, silence_thresh, keep_silence):
+def extract_speaker_target(speaker_target_embedding, input_path, output_path, distance_threshold, min_length_seconds,
+                           max_length_seconds, min_silence_len, silence_thresh, keep_silence):
     print(f"Processing ground truth: {input_path}...")
 
     diarization = PIPELINE(input_path)
@@ -107,7 +107,7 @@ def main(input_dir, output_dir, distance_threshold, speaker_target_file, sample_
             output_path = os.path.join(output_dir, os.path.splitext(file_name)[0])
             subprocess.run(["mkdir", "-p", output_path])
 
-            match_count, output_path = process_speaker_target(
+            match_count, output_path = extract_speaker_target(
                 speaker_target_embedding, input_path, output_path,
                 distance_threshold,  min_length_seconds, max_length_seconds,
                 min_silence_len, silence_thresh, keep_silence)
