@@ -10,33 +10,24 @@ function split_audio {
 }
 
 function get_speaker {
-  # Given a sample of a speaker, extracts an embedding which is compared to other
   input_dir="$1"
   output_dir="$2"
   distance_threshold="0.42"
-  target_speaker ="audio/ground_truth.wav"
-  sample_rate = "16000"
-  output_sample_rate = "16000"
-  min_length_seconds = "2"
-  max_length_seconds = "10"
-  min_silence_len = "300"
-  silence_thresh = "-40"
-  keep_silence= "200"
-  python3 tools/get_speaker.py "$input_dir" "$output_dir" "$distance_threshold" "$target_speaker" "$sample_rate" "$output_sample_rate" "$min_length_seconds" "$max_length_seconds" "$min_silence_len" "$silence_thresh" "$keep_silence"
+  target_speaker="audio/ground_truth.wav"
+  sample_rate="16000"
+  output_sample_rate="16000"
+  min_length_seconds="2"
+  max_length_seconds="10"
+  min_silence_len="300"
+  silence_thresh="-40"
+  keep_silence="200"
+  if [[ -n "$target_speaker" && -n "$distance_threshold" ]]; then
+    python3 tools/get_speaker.py "$input_dir" "$output_dir" "$distance_threshold" "$target_speaker" "$sample_rate" "$output_sample_rate" "$min_length_seconds" "$max_length_seconds" "$min_silence_len" "$silence_thresh" "$keep_silence"
+  else
+    python3 tools/get_all_speakers.py "$input_dir" "$output_dir" "$sample_rate" "$output_sample_rate" "$min_length_seconds" "$max_length_seconds" "$min_silence_len" "$silence_thresh" "$keep_silence"
+  fi
 }
 
-function get_all_speakers {
-  input_dir="$1"
-  output_dir="$2"
-  sample_rate = "16000"
-  output_sample_rate = "16000"
-  min_length_seconds = "2"
-  max_length_seconds = "10"
-  min_silence_len="300",
-  silence_thresh= "-40",
-  keep_silence="200"
-  python3 tools/get_all_speakers.py "$input_dir" "$output_dir" "$sample_rate" "$output_sample_rate" "$min_length_seconds" "$max_length_seconds" "$min_silence_len" "$silence_thresh" "$keep_silence"
-}
 
 function cut_music {
   input_dir="$1"
@@ -92,11 +83,9 @@ function dataset_report {
 }
 
 #split_audio "audio/0input" "audio/1split"
-#get_all_speakers "audio/1split" "audio/2speaker"
 #get_speaker "audio/1split" "audio/2speaker"
 #rnn_normalize "audio/2speaker" "audio/3rnn_normalize"
 #cut_music "audio/3rnn_normalize/"
-#find audio/3rnn_normalize -type f -name "*.txt" -delete
 #whisper "audio/3rnn_normalize"
 #flac_convert "audio/3rnn_normalize" "audio/4flac"
 #text_cleanup "audio/4flac"
