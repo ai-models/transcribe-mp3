@@ -63,6 +63,11 @@ function rnn_normalize {
   python3 tools/rnn_normalize.py "$input_dir" "$output_dir" "$peak" "$loudness" "$sample_rate"
 }
 
+function deepfilter_clean {
+  source_dir = "wav48_silence_trimmed/p001"
+  target_dir = "wav48_silence_trimmed/p001-clean"
+  python3 tools/deepfilter_clean.py "$source_dir" "$target_dir"
+}
 function flac_convert {
   python3 tools/flac_conv.py "$1" "$2"
 }
