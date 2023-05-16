@@ -1,7 +1,6 @@
 #!/bin/bash
 
 function split_audio {
-  # Splits audio into separated files for easier processing
   input_dir="$1"
   output_dir="$2"
   segment_time="1000"
@@ -12,8 +11,8 @@ function split_audio {
 function get_speaker {
   input_dir="$1"
   output_dir="$2"
-  distance_threshold="0.42"
-  target_speaker="audio/ground_truth.wav"
+#  distance_threshold="0.42"
+#  target_speaker="audio/ground_truth.wav"
   sample_rate="16000"
   output_sample_rate="16000"
   min_length_seconds="2"
@@ -85,11 +84,11 @@ function dataset_report {
 }
 
 #split_audio "audio/0input" "audio/1split"
-#get_speaker "audio/1split" "audio/2speaker"
+get_speaker "audio/1split" "audio/2speaker"
 #rnn_normalize "audio/2speaker" "audio/3rnn_normalize"
 #cut_music "audio/3rnn_normalize/"
 #whisper "audio/3rnn_normalize"
 #flac_convert "audio/3rnn_normalize" "audio/4flac"
 #text_cleanup "audio/4flac"
-prep_dataset_speaker "audio/4flac"
+#prep_dataset_speaker "audio/4flac"
 #dataset_report "audio/dataset" "16"

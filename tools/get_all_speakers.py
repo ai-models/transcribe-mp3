@@ -81,7 +81,7 @@ def process_ground_truth(input_path, output_path, output_sample_rate,
     return match_count, output_path
 
 
-def main(input_dir, output_dir, sample_rate, output_sample_rate, min_length_seconds, max_length_seconds, min_silence_len, silence_threshold, keep_silence):
+def main(input_dir, output_dir, output_sample_rate, min_length_seconds, max_length_seconds, min_silence_len, silence_threshold, keep_silence):
     if os.path.exists(output_dir):
         subprocess.run(["rm", "-rf", output_dir])
     subprocess.run(["mkdir", "-p", output_dir])
