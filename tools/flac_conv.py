@@ -7,6 +7,10 @@ import sys
 input_dir = sys.argv[1]
 output_dir = sys.argv[2]
 
+# rmdir if exists
+if os.path.exists(output_dir):
+    shutil.rmtree(output_dir)
+
 
 for root, dirs, files in os.walk(input_dir):
     for filename in files:

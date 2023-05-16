@@ -24,23 +24,29 @@
 # SOFTWARE.
 import argparse
 import glob
-import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 
+import librosa
 import torch as th
 import torchaudio as ta
 from demucs.apply import apply_model, BagOfModels
-from demucs.audio import AudioFile, convert_audio
 from demucs.pretrained import get_model_from_args, add_model_flags, ModelLoadingError
 from dora.log import fatal
-
-
-def compute_rms_energy(audio_tensor):
-    energy = th.sqrt(th.mean(audio_tensor ** 2))
-    return energy.item()
+from demucs.audio import AudioFile, convert_audio
+import scipy.signal
+import numpy as np
+def count_peaks(x, threshold_db):
+    # Convert threshold from dB to amplitude
+    threshold = 10 ** (threshold_db / 20)
+    # Convert torch tensor to numpy array
+    x = x.detach().cpu().numpy().flatten()
+    # Compute the peak indices and amplitudes using the find_peaks function
+    peaks, _ = scipy.signal.find_peaks(x, height=threshold)
+    # Return the number of peaks found
+    return len(peaks)
 
 def load_track(track, audio_channels, samplerate):
     errors = {}
@@ -71,6 +77,10 @@ def load_track(track, audio_channels, samplerate):
             print(f"When trying to load using {backend}, got the following error: {error}")
         sys.exit(1)
     return wav
+
+
+def compute_spectral_centroid(signal, sr):
+    return librosa.feature.spectral_centroid(y=signal, sr=sr)[0].mean()
 
 
 def main():
@@ -170,11 +180,10 @@ def main():
         wav_files = glob.glob(os.path.join(str(args.tracks), "*.wav"))
     else:
         print("Invalid path: must be either a directory with subdirectories or a directory with WAV files.")
-        return    print(f"Found {len(wav_files)} files to separate.")
+        return print(f"Found {len(wav_files)} files to separate.")
     if not wav_files:
         print("No WAV files found in the specified directory.")
         return
-
 
     # Process and analyze each WAV file
     energy_summary = []
@@ -186,37 +195,22 @@ def main():
         sources = apply_model(model, wav[None], device=args.device, shifts=args.shifts,
                               split=args.split, overlap=args.overlap, progress=False,
                               num_workers=args.jobs)[0]
+
         sources = sources * ref.std() + ref.mean()
+        bass_noises_count_peaks = int(count_peaks(sources[1],-40))
+        high_noises_count_peaks = int(count_peaks(sources[2],-40))
 
-        # Assuming sources[0] contains vocals, and sources[1] contains other noise
-        vocal_energy = compute_rms_energy(sources[0])
-        noise_energy = compute_rms_energy(sources[1])
-        background_music = compute_rms_energy(sources[2])
-        noise_energy2 = compute_rms_energy(sources[3])
-        energy_summary.append((track, vocal_energy, noise_energy, background_music, noise_energy2))
+        energy_summary.append({
+            'track': str(track),
+            'bass_noises_count_peaks': bass_noises_count_peaks,
+            'high_noises_count_peaks': high_noises_count_peaks
+        })
 
-    energy_summary_list = []
-
-    # Loop over each track and append its summary to the list
-    for track, vocal_energy, noise_energy, background_music, noise_energy2 in energy_summary:
-        # print(track, vocal_energy, noise_energy, background_music, noise_energy2)
-        difference = abs(vocal_energy - background_music)
-        if (difference > 0.0008):
-            energy_summary_list.append({
-                "track": str(track),
-                "difference": difference,
-                "vocal_energy": vocal_energy,
-                "noise_energy": noise_energy,
-                "background_music": background_music,
-                "noise_energy2": noise_energy2
-            })
-    # Convert the list to a JSON string
     # save energy summary list to a file
     with open('energy_summary_list.json', 'w') as f:
         f.write(str(energy_summary))
     # Print the JSON string to the console
-
-    print(energy_summary_list)
+    print(energy_summary)
 
 
 if __name__ == "__main__":

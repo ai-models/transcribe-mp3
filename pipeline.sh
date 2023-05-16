@@ -3,36 +3,64 @@
 function split_audio {
   input_dir="$1"
   output_dir="$2"
-  mkdir -p "$output_dir"
-  for mp3 in $input_dir/*.mp3; do
-    echo "Processing $mp3 ..."
-    prefix=$(echo "$mp3" | md5sum | cut -c -5)
-    ffmpeg -i "$mp3" -ar 16000 -ac 1 -sample_fmt s16 -f segment -segment_time 1800 -c:a pcm_s16le "$output_dir/${prefix}_%03d.wav"
-  done
+  segment_time="1000"
+  output_sample_rate="16000"
+  python3 tools/split_audio.py "$input_dir" "$output_dir" "$segment_time" "$output_bitrate"
 }
 
 function get_speaker {
-  python3 tools/get_speaker.py "$1" "$2"
+  input_dir="$1"
+  output_dir="$2"
+  distance_threshold="0.42"
+  target_speaker ="audio/ground_truth.wav"
+  sample_rate = "16000"
+  output_sample_rate = "16000"
+  min_length_seconds = "2"
+  max_length_seconds = "10"
+  python3 tools/get_speaker.py "$input_dir" "$output_dir" "$distance_threshold" "$target_speaker" "$sample_rate" "$output_sample_rate" "$min_length_seconds" "$max_length_seconds"
+}
+
+function get_all_speakers {
+  input_dir="$1"
+  output_dir="$2"
+  sample_rate = "16000"
+  output_sample_rate = "16000"
+  min_length_seconds = "2"
+  max_length_seconds = "10"
+  min_silence_len="300",
+  silence_thresh=-"40",
+  keep_silence="200"
+  python3 tools/get_all_speakers.py "$input_dir" "$output_dir" "$sample_rate" "$output_sample_rate" "$min_length_seconds" "$max_length_seconds" "$min_silence_len" "$silence_thresh" "$keep_silence"
 }
 
 function cut_music {
-  python3 tools/check_music.py "$1" "$2"
+  input_dir="$1"
+  noise_bass_peaks_threshold = "400"
+  noise_treble_peaks_threshold = "400"
+  python tools/demucs_separate.py  --two-stems vocals -n htdemucs_ft "$input_dir"
+  python tools/remove_noisy_tracks.py "$noise_bass_peaks_threshold" "$noise_treble_peaks_threshold"
 }
 
 function whisper {
-  python3 tools/whisper.py "$1"
-}
-
-function fast_whisper {
-  python3 tools/fast_whisper.py "$1"
+  input_dir = "$1"
+  model_name="large-v2"
+  python3 tools/whisper.py "$input_dir" "$model_name"
 }
 
 function prep_dataset_speaker {
-  python3 tools/prep_dataset_speaker.py "$1"
+  input_dir = "$1"
+  target_wav = "audio/dataset/wav48_silence_trimmed"
+  target_txt = "audio/dataset/txt"
+  python3 tools/dataset_prep.py "$input_dir" "$target_wav" "$target_txt"
 }
 
 function rnn_normalize {
-  python3 tools/rnn_normalize.py "$1" "$2"
+  input_dir = "$1"
+  output_dir = "$2"
+  peak = "-6"
+  loudness = "-27"
+  sample_rate = "16000"
+  python3 tools/rnn_normalize.py "$input_dir" "$output_dir" "$peak" "$loudness" "$sample_rate"
 }
 
 function flac_convert {
@@ -43,13 +71,20 @@ function text_cleanup {
   python3 tools/_clean_transcript.py "$1"
 }
 
+function dataset_report {
+  python3 tools/dataset-report.py "$1" "$2"
+}
+
+
 #split_audio "audio/0input" "audio/1split"
+#get_all_speakers "audio/1split" "audio/2speaker"
 #get_speaker "audio/1split" "audio/2speaker"
 #rnn_normalize "audio/2speaker" "audio/3rnn_normalize"
-cut_music "audio/3rnn_normalize"
-#fast_whisper "audio/3rnn_normalize"
+#cut_music "audio/3rnn_normalize/"
+#find audio/3rnn_normalize -type f -name "*.txt" -delete
+#whisper "audio/3rnn_normalize"
 #flac_convert "audio/3rnn_normalize" "audio/4flac"
 #text_cleanup "audio/4flac"
-#prep_dataset_speaker "audio/4flac"
-
+prep_dataset_speaker "audio/4flac"
+#dataset_report "audio/dataset" "16"
 
