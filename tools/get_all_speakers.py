@@ -29,10 +29,10 @@ def audio_len(audio_file):
     return len(audio_file) / 1000
 
 
-def process_ground_truth(input_path, output_path, output_sample_rate,
+def extract_speakers(input_path, output_path, output_sample_rate,
                          min_length_seconds, max_length_seconds, min_silence_len,
                          silence_threshold, keep_silence):
-    print(f"Processing ground truth: {input_path}...")
+    print(f"Processing extract speakers: {input_path}...")
 
     diarization = PIPELINE(input_path)
     track = AudioSegment.from_wav(input_path)
@@ -92,17 +92,17 @@ def main(input_dir, output_dir, output_sample_rate, min_length_seconds, max_leng
             output_path = os.path.join(output_dir, os.path.splitext(file_name)[0])
             subprocess.run(["mkdir", "-p", output_path])
 
-            process_ground_truth(input_path, output_path, output_sample_rate, min_length_seconds, max_length_seconds, min_silence_len, silence_threshold, keep_silence)
+            extract_speakers(input_path, output_path, output_sample_rate, min_length_seconds, max_length_seconds, min_silence_len, silence_threshold, keep_silence)
 
 if __name__ == "__main__":
     # Constants
     input_dir = sys.argv[1]
     output_dir = sys.argv[2]
-    sample_rate = sys.argv[3]
-    output_sample_rate = sys.argv[4]
-    min_length_seconds = sys.argv[5]
-    max_length_seconds = sys.argv[6]
-    min_silence_len = sys.argv[7]
-    silence_threshold = sys.argv[8]
-    keep_silence = sys.argv[9]
+    sample_rate = int(sys.argv[3])
+    output_sample_rate = int(sys.argv[4])
+    min_length_seconds = int(sys.argv[5])
+    max_length_seconds = int(sys.argv[6])
+    min_silence_len = int(sys.argv[7])
+    silence_threshold = str(sys.argv[8])
+    keep_silence = int(sys.argv[9])
     main(input_dir, output_dir, output_sample_rate, min_length_seconds, max_length_seconds, min_silence_len, silence_threshold, keep_silence)
