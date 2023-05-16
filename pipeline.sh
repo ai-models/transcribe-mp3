@@ -37,7 +37,7 @@ function cut_music {
   input_dir="$1"
   noise_bass_peaks_threshold = "400"
   noise_treble_peaks_threshold = "400"
-  python tools/demucs_separate.py  --two-stems vocals -n htdemucs_ft "$input_dir"
+  python tools/demucs_separate.py --two-stems vocals -n htdemucs_ft "$input_dir"
   python tools/remove_noisy_tracks.py "$noise_bass_peaks_threshold" "$noise_treble_peaks_threshold"
 }
 
@@ -73,10 +73,10 @@ function flac_convert {
 }
 
 function vctk_normalize_and_trim {
-  INPUT_FOLDER = 'vctk-english/wav48_silence_trimmed/p345'
-  OUTPUT_FOLDER = 'vctk-english/wav48_silence_trimmed/p345-trimmed'
-  OUTPUT_SR = 16000
-  python3 tools/vctk_normalize_and_trim.py "$1" "$2"
+  input_dir = 'vctk-english/wav48_silence_trimmed/p345'
+  output_dir = 'vctk-english/wav48_silence_trimmed/p345-trimmed'
+  output_sample_rate = 16000
+  python3 tools/vctk_normalize_and_trim.py "$input_dir" "$output_dir" "$output_sample_rate"
 }
 function text_cleanup {
   python3 tools/_clean_transcript.py "$1"
@@ -85,7 +85,6 @@ function text_cleanup {
 function dataset_report {
   python3 tools/dataset-report.py "$1" "$2"
 }
-
 
 #split_audio "audio/0input" "audio/1split"
 #get_all_speakers "audio/1split" "audio/2speaker"
@@ -98,4 +97,3 @@ function dataset_report {
 #text_cleanup "audio/4flac"
 prep_dataset_speaker "audio/4flac"
 #dataset_report "audio/dataset" "16"
-
