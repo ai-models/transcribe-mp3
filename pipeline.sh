@@ -72,6 +72,12 @@ function flac_convert {
   python3 tools/flac_conv.py "$1" "$2"
 }
 
+function vctk_normalize_and_trim {
+  INPUT_FOLDER = 'vctk-english/wav48_silence_trimmed/p345'
+  OUTPUT_FOLDER = 'vctk-english/wav48_silence_trimmed/p345-trimmed'
+  OUTPUT_SR = 16000
+  python3 tools/vctk_normalize_and_trim.py "$1" "$2"
+}
 function text_cleanup {
   python3 tools/_clean_transcript.py "$1"
 }
