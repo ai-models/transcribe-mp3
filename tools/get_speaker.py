@@ -35,7 +35,7 @@ def get_embedding(audio_file):
     return MODEL(waveform[None])
 
 
-def process_ground_truth(ground_truth_embedding, input_path, output_path, distance_threshold, min_length_seconds,
+def process_speaker_target(speaker_target_embedding, input_path, output_path, distance_threshold, min_length_seconds,
                          max_length_seconds, min_silence_len, silence_thresh, keep_silence):
     print(f"Processing ground truth: {input_path}...")
 
@@ -70,7 +70,7 @@ def process_ground_truth(ground_truth_embedding, input_path, output_path, distan
                 if len(chunk) > max_length_seconds * 1000:
                     os.remove(output_file)
                 else:
-                    distance = cdist(ground_truth_embedding, get_embedding(output_file), metric="cosine")
+                    distance = cdist(speaker_target_embedding, get_embedding(output_file), metric="cosine")
                     print(f"Processing {input_path} - {speaker} - {i}: Chunks: {len(chunk) - 1} - Distance: {distance}")
 
                     if distance <= distance_threshold:
@@ -92,13 +92,13 @@ def process_ground_truth(ground_truth_embedding, input_path, output_path, distan
     return match_count, output_path
 
 
-def main(input_dir, output_dir, distance_threshold, ground_truth_file, sample_rate, output_sample_rate,
-         min_length_seconds, max_length_seconds, min_silence_len, silence_thresh, keep_silence):
+def main(input_dir, output_dir, distance_threshold, speaker_target_file, sample_rate_in, output_sample_rate,
+         min_length_seconds, max_length_seconds, min_silence_len, silence_threshold, keep_silence):
     if os.path.exists(output_dir):
         subprocess.run(["rm", "-rf", output_dir])
     subprocess.run(["mkdir", "-p", output_dir])
 
-    ground_truth_embedding = get_embedding(ground_truth_file)
+    speaker_target_embedding = get_embedding(speaker_target_file)
     matching_files = []
 
     for file_name in os.listdir(input_dir):
@@ -107,13 +107,10 @@ def main(input_dir, output_dir, distance_threshold, ground_truth_file, sample_ra
             output_path = os.path.join(output_dir, os.path.splitext(file_name)[0])
             subprocess.run(["mkdir", "-p", output_path])
 
-            match_count, output_path = process_ground_truth(
-                ground_truth_embedding,
-                input_path,
-                output_path,
-                distance_threshold,
-                min_length_seconds,
-                max_length_seconds)
+            match_count, output_path = process_speaker_target(
+                speaker_target_embedding, input_path, output_path,
+                distance_threshold,  min_length_seconds, max_length_seconds,
+                min_silence_len, silence_thresh, keep_silence)
             if match_count >= 0:
                 matching_file = f"p001_{match_count:05}_mic1.wav"
                 matching_files.append(os.path.join(output_path, matching_file))
@@ -123,13 +120,13 @@ if __name__ == "__main__":
     input_dir = sys.argv[1]
     output_dir = sys.argv[2]
     distance_threshold = sys.argv[3]
-    ground_truth_file = sys.argv[4]
+    speaker_target_file = sys.argv[4]
     sample_rate_in = sys.argv[5]
     output_sample_rate = sys.argv[6]
     min_length_seconds = sys.argv[7]
     max_length_seconds = sys.argv[8]
     min_silence_len = sys.argv[9]
-    silence_thresh = sys.argv[10]
+    silence_threshold = sys.argv[10]
     keep_silence = sys.argv[11]
-    main(input_dir, output_dir, distance_threshold, ground_truth_file, sample_rate_in, output_sample_rate,
-         min_length_seconds, max_length_seconds, max_length_seconds, min_silence_len, silence_thresh, keep_silence)
+    main(input_dir, output_dir, distance_threshold, speaker_target_file, sample_rate_in, output_sample_rate,
+         min_length_seconds, max_length_seconds, min_silence_len, silence_threshold, keep_silence)
