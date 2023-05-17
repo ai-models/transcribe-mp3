@@ -49,10 +49,10 @@ function whisper {
 }
 
 function prep_dataset_speaker {
-  $input_dir="$1"
+  input_dir="$1"
   target_wav="audio/dataset/wav48_silence_trimmed"
   target_txt="audio/dataset/txt"
-  speaker_id="p001"
+#  speaker_id="p001"
   python3 tools/dataset_prep.py "$input_dir" "$target_wav" "$target_txt" "$speaker_id"
 }
 
@@ -93,5 +93,5 @@ function dataset_report {
 #whisper "audio/3normalize"
 flac_convert "audio/3normalize" "audio/4flac"
 #text_cleanup "audio/4flac"
-#prep_dataset_speaker "audio/4flac"
-#dataset_report "audio/dataset" "16"
+prep_dataset_speaker "audio/4flac"
+dataset_report "audio/dataset" "16"

@@ -1,21 +1,29 @@
 import glob
 import os
 import shutil
+import sys
 
 
-def make_vctk_dataset(source_dir, target_wav, target_txt, speaker_id):
+def make_vctk_dataset(input_dir, output_dir_wav, output_dir_txt, speaker_id=None):
     # Create target directories if they don't exist
-    os.makedirs(os.path.join(target_txt, speaker_id), exist_ok=True)
-    os.makedirs(os.path.join(target_wav, speaker_id), exist_ok=True)
+    print(input_dir)
 
     # Recursively find all txt files in the source directory
-    txt_files = glob.glob(os.path.join(source_dir, '**', '*.txt'), recursive=True)
+    txt_files = glob.glob(os.path.join(input_dir, '**', '*.txt'), recursive=True)
 
     # Initialize a counter to keep track of the output file names
     counter = 1
 
     for txt_file in txt_files:
-        # Check if the txt file is empty
+        speaker_id = os.path.basename(os.path.dirname(txt_file))
+        speaker_id = speaker_id.replace("SPEAKER_", "S")
+        if not speaker_id:
+            print(f"Skipping invalid file path: {txt_file}")
+            continue
+
+        os.makedirs(os.path.join(output_dir_txt, speaker_id), exist_ok=True)
+        os.makedirs(os.path.join(output_dir_wav, speaker_id), exist_ok=True)
+        # Check if the TXT file is empty
         if os.path.getsize(txt_file) == 0:
             print(f"Skipping empty file: {txt_file}")
             continue
@@ -33,8 +41,8 @@ def make_vctk_dataset(source_dir, target_wav, target_txt, speaker_id):
 
         # Get the destination file paths
         prefix = f"{speaker_id}_{str(counter).zfill(4)}"
-        dest_txt_file = os.path.join(target_dir, 'txt', speaker_id, f"{prefix}.txt")
-        dest_flac_file = os.path.join(target_dir, 'wav48_silence_trimmed', speaker_id, f"{prefix}_mic1.flac")
+        dest_txt_file = os.path.join(output_dir_txt, speaker_id, f"{prefix}.txt")
+        dest_flac_file = os.path.join(output_dir_wav, speaker_id, f"{prefix}_mic1.flac")
 
         # Copy the files to the destination directory
         shutil.copy(txt_file, dest_txt_file)
@@ -44,10 +52,11 @@ def make_vctk_dataset(source_dir, target_wav, target_txt, speaker_id):
         # Increment the counter
         counter += 1
 
-
+    # print(txt_files)
+    # print(input_dir)
 if __name__ == "__main__":
     input_dir = sys.argv[1]
-    target_wav = sys.argv[2]
-    target_txt = sys.argv[3]
+    output_dir_wav = sys.argv[2]
+    output_dir_txt = sys.argv[3]
     speaker_id = sys.argv[4]
-    make_vctk_dataset(input_dir, target_wav, target_txt, speaker_id)
+    make_vctk_dataset(input_dir, output_dir_wav, output_dir_txt, speaker_id)
