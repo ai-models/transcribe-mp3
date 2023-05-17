@@ -1,3 +1,4 @@
+import glob
 import os
 import shutil
 import sys
@@ -7,15 +8,20 @@ import pyloudnorm as pyln
 import soundfile as sf
 
 
+from pathlib import Path
+
 def normalize_audio(input_dir, output_dir, peak, loudness_val, sample_rate=48000):
-    audio_files = glob.glob(os.path.join(input_dir, "**/*.{wav,flac}"), recursive=True)
+    input_path = Path(input_dir)
+    output_path = Path(output_dir)
+
+    audio_files = list(input_path.rglob('*.wav'))
+    audio_files.extend(input_path.rglob('*.flac'))
 
     for filepath in audio_files:
-        print(filepath)
-        output_subdir = os.path.join(output_dir, os.path.relpath(filepath, input_dir))
-        os.makedirs(output_subdir, exist_ok=True)
-        base = os.path.basename(filepath)
-        target_file = os.path.join(output_subdir, base)
+        rel_path = filepath.relative_to(input_path)
+        output_subdir = output_path / rel_path.parent
+        output_subdir.mkdir(parents=True, exist_ok=True)
+        target_file = output_subdir / filepath.name
 
         data, rate = sf.read(filepath)
 
@@ -24,7 +30,6 @@ def normalize_audio(input_dir, output_dir, peak, loudness_val, sample_rate=48000
         loudness = meter.integrated_loudness(data)
         loudness_normalized_audio = pyln.normalize.loudness(data, loudness, loudness_val)
         sf.write(target_file, data=loudness_normalized_audio, samplerate=sample_rate)
-
 
 if __name__ == "__main__":
     input_dir = sys.argv[1]

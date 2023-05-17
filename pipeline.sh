@@ -87,10 +87,10 @@ function dataset_report {
 
 #mp3_to_wav "audio/0input" "audio/1wav"
 #get_speaker "audio/1wav" "audio/2speaker"
-deep_clean "audio/2speaker" "audio/2speaker-deepfilter"
+#deep_clean "audio/2speaker" "audio/2speaker-deepfilter"
 #normalize "audio/2speaker-deepfilter" "audio/3normalize"
 #cut_music "audio/3normalize/"
-#whisper "audio/3normalize"
+whisper "audio/3normalize"
 #flac_convert "audio/3rnn_normalize" "audio/4flac"
 #text_cleanup "audio/4flac"
 #prep_dataset_speaker "audio/4flac"

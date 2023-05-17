@@ -40,7 +40,7 @@ def clean_directory_with_deepfilter(input_dir, output_dir, output_sr):
 
         # Use ffmpeg to convert the bitrate to the desired output sample rate
         target_path = os.path.join(output_subdir, filename)
-        os.system(f"ffmpeg -i {temp_path} -loglevel quiet -ar {output_sr} {target_path}")
+        os.system(f"ffmpeg -i {temp_path}  -y -loglevel quiet -ar {output_sr} {target_path}")
 
         # Remove the temporary file
         os.remove(temp_path)
