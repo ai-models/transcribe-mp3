@@ -13,7 +13,6 @@ from read_config import read_config
 
 pyannote_token = read_config()["hf_key"]
 
-
 # Pretrained Models
 PIPELINE = Pipeline.from_pretrained("pyannote/speaker-diarization", use_auth_token=pyannote_token)
 OVERLAP_PIPELINE = Pipeline.from_pretrained("pyannote/overlapped-speech-detection", use_auth_token=pyannote_token)
@@ -58,7 +57,7 @@ def extract_speakers(input_path, output_path, output_sample_rate,
         chunks = split_on_silence(seg, min_silence_len, silence_threshold, keep_silence)
         new_chunks = []
         for i, chunk in enumerate(chunks):
-            if len(chunk) > max_length_seconds * 1000 :
+            if len(chunk) > max_length_seconds * 1000:
                 print('Resplitting chunk')
                 subchunks = split_on_silence(chunk, min_silence_len, silence_threshold, keep_silence)
                 new_chunks += subchunks
@@ -72,7 +71,7 @@ def extract_speakers(input_path, output_path, output_sample_rate,
             chunk.export(output_file, format="wav", parameters=["-ac", "1", "-ar", str(output_sample_rate)])
 
             if len(chunk) > max_length_seconds * 1000 or len(chunk) < min_length_seconds * 1000:
-                print(f"Skipping {output_file} due to length.")
+                print(f"Skipping {output_file} due to length. > {len(chunk)}")
                 os.remove(output_file)
             else:
                 # print(f"Processing {input_path} - {speaker}/{SEG_C}-{i}")
@@ -87,7 +86,8 @@ def extract_speakers(input_path, output_path, output_sample_rate,
     return match_count, output_path
 
 
-def main(input_dir, output_dir, output_sample_rate, min_length_seconds, max_length_seconds, min_silence_len, silence_threshold, keep_silence):
+def main(input_dir, output_dir, output_sample_rate, min_length_seconds, max_length_seconds, min_silence_len,
+         silence_threshold, keep_silence):
     if os.path.exists(output_dir):
         subprocess.run(["rm", "-rf", output_dir])
     subprocess.run(["mkdir", "-p", output_dir])
@@ -98,7 +98,9 @@ def main(input_dir, output_dir, output_sample_rate, min_length_seconds, max_leng
             output_path = os.path.join(output_dir, os.path.splitext(file_name)[0])
             subprocess.run(["mkdir", "-p", output_path])
 
-            extract_speakers(input_path, output_path, output_sample_rate, min_length_seconds, max_length_seconds, min_silence_len, silence_threshold, keep_silence)
+            extract_speakers(input_path, output_path, output_sample_rate, min_length_seconds, max_length_seconds,
+                             min_silence_len, silence_threshold, keep_silence)
+
 
 if __name__ == "__main__":
     # Constants
@@ -111,4 +113,5 @@ if __name__ == "__main__":
     min_silence_len = int(sys.argv[7])
     silence_threshold = str(sys.argv[8])
     keep_silence = int(sys.argv[9])
-    main(input_dir, output_dir, output_sample_rate, min_length_seconds, max_length_seconds, min_silence_len, silence_threshold, keep_silence)
+    main(input_dir, output_dir, output_sample_rate, min_length_seconds, max_length_seconds, min_silence_len,
+         silence_threshold, keep_silence)

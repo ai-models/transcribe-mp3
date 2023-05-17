@@ -22,7 +22,7 @@ function get_speaker {
 #  target_speaker="audio/ground_truth.wav"
   sample_rate="48000"
   output_samplerate="48000"
-  min_length_seconds="2"
+  min_length_seconds="1"
   max_length_seconds="10"
   min_silence_len="300"
   silence_thresh="-40"
@@ -86,8 +86,8 @@ function dataset_report {
 }
 
 #mp3_to_wav "audio/0input" "audio/1wav"
-get_speaker "audio/1wav" "audio/2speaker"
-#deep_clean "audio/2speaker" "audio/2speaker-deepfilter"
+#get_speaker "audio/1wav" "audio/2speaker"
+deep_clean "audio/2speaker" "audio/2speaker-deepfilter"
 #normalize "audio/2speaker-deepfilter" "audio/3normalize"
 #cut_music "audio/3normalize/"
 #whisper "audio/3normalize"

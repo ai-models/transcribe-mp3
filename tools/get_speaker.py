@@ -68,7 +68,7 @@ def extract_speaker_target(speaker_target_embedding, input_path, output_path,
             chunk.export(output_file, format="wav", parameters=["-ac", "1", "-ar", str(output_sample_rate)])
 
             if len(chunk) > max_length_seconds * 1000 or len(chunk) < min_length_seconds * 1000:
-                print(f"Skipping {output_file} due to length.")
+                print(f"Skipping {output_file} due to length. > {len(chunk)}")
                 os.remove(output_file)
             else:
                 distance = cdist(speaker_target_embedding, get_embedding(output_file), metric="cosine")
