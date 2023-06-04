@@ -1,6 +1,7 @@
 import os
 import subprocess
 from pathlib import Path
+import sys
 
 import pyloudnorm as pyln
 import requests
@@ -29,14 +30,17 @@ def prepare_vctk(input_folder, output_folder, output_samplerate):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    # Loop through all FLAC files in the input directory
+    # Loop through all FLAC files in the input directory and its subdirectories
     for flac_file in Path(input_folder).rglob('*.flac'):
-        filename = flac_file.stem
-        input_string = '_'.join(filename.split('_')[:2])  # Extract the first two parts of the filename
-        if input_string in silences:
+        # print('Processing file:', flac_file)
+        input_path = str(flac_file)
+        filename = flac_file.stem.replace('_mic1', '').replace('_mic2', '')
+        print(filename)
+        # print(silences)
+        if filename in silences:
+            print('Processing file:', flac_file)
             # Read the audio file
-            start_time, end_time = silences[input_string]
-            input_path = str(flac_file)
+            start_time, end_time = silences[filename]
             y, sr = sf.read(input_path)
 
             # Peak normalization
@@ -52,8 +56,15 @@ def prepare_vctk(input_folder, output_folder, output_samplerate):
             end_sample = int(end_time * sr)
             y_trimmed = loudness_normalized_audio[start_sample:end_sample]
 
-            # Save the trimmed and resampled audio to the output directory
-            output_path = os.path.join(output_folder, filename + '.flac')
+            # Get the relative subdirectory path within the input folder
+            subdirectory = flac_file.parent.relative_to(input_folder)
+
+            # Create the corresponding subdirectory in the output folder
+            output_subfolder = os.path.join(output_folder, subdirectory)
+            os.makedirs(output_subfolder, exist_ok=True)
+
+            # Save the trimmed and resampled audio to the output subdirectory
+            output_path = os.path.join(output_subfolder, flac_file.name)
             sf.write(output_path, data=y_trimmed, samplerate=sr)
 
     for flac_file in Path(output_folder).rglob('*.flac'):
@@ -65,10 +76,12 @@ def prepare_vctk(input_folder, output_folder, output_samplerate):
         os.replace(output_path, input_path)
         print('Downsampled file saved:', output_path)
 
+
 if __name__ == '__main__':
     # Set the URL for the vctk-silences file
     silences_url = 'https://raw.githubusercontent.com/nii-yamagishilab/vctk-silence-labels/master/vctk-silences.0.92.txt'
     input_folder = sys.argv[1]
     output_folder = sys.argv[2]
-    output_samplerate = sys.argv[3]  # Output sampling rate in Hz
+    output_samplerate = int(sys.argv[3])  # Output sampling rate in Hz
+
     prepare_vctk(input_folder, output_folder, output_samplerate)

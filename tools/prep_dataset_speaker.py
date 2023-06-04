@@ -4,15 +4,17 @@ import sys
 
 
 def scan_and_delete_empty_files(root_dir):
+    print(f"Scanning and deleting empty files in: {root_dir}")
     files_to_delete = []
     for subdir, dirs, files in os.walk(root_dir):
         for file in files:
             filepath = os.path.join(subdir, file)
 
-            # Check if the text file is empty or if the FLAC file is under 20kb
+            # Check if the text file is empty or if the FLAC file is under 100kb
+            print(f"Checking file: {filepath}")
             if (file.endswith(".txt") and not open(filepath, 'r').read().strip()) or \
-                    (file.endswith(".flac") and os.path.getsize(filepath) < 5 * 1024):
-
+                    (file.endswith(".flac") and os.path.getsize(filepath) < 200 * 1024):
+                print(f"File is empty or too small: {filepath}")
                 # Remove the txt and the associated flac file if any
                 if file.endswith(".txt"):
                     txt_filepath = filepath

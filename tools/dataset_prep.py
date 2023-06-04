@@ -25,18 +25,13 @@ def make_vctk_dataset(input_dir, output_dir_wav, output_dir_txt, speaker_id=None
         os.makedirs(os.path.join(output_dir_wav, speaker_id), exist_ok=True)
         # Check if the TXT file is empty
         if os.path.getsize(txt_file) == 0:
-            print(f"Skipping empty file: {txt_file}")
+            print(f"Skipping empty txt: {txt_file}")
             continue
 
         # Find the associated flac file
         flac_file = txt_file.replace('.txt', '.flac')
         if not os.path.isfile(flac_file):
             print(f"Skipping {txt_file} because associated flac file not found")
-            continue
-
-        # Check if the flac file is under 20kb
-        if os.path.getsize(flac_file) < 20 * 1024:
-            print(f"Skipping {txt_file} and {flac_file} because flac file is under 20kb")
             continue
 
         # Get the destination file paths
