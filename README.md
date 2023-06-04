@@ -14,7 +14,7 @@ This Bash script defines a series of functions to process audio files using vari
 7. **Normalization**: Normalizes the audio volume.
 8. **FLAC Conversion**: Converts audio files to FLAC format.
 9. **VCTK Normalization and Trimming**: Normalizes and trims VCTK audio files.
-10. **Text Cleanup**: Cleans up the transcript text.
+10. **Text Cleanup**: Cleans up the transcript text. (there is an update which uses openai, not included yet)
 11. **Dataset Report**: Generates a report on the audio dataset.
 
 To use the pipeline, uncomment the desired function calls at the end of the script and provide the appropriate input and output directories. Each function corresponds to a specific operation.
