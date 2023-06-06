@@ -87,7 +87,7 @@ function dataset_report {
 
 #mp3_to_wav "audio/0input" "audio/1wav"
 #get_speaker "audio/1wav" "audio/2speaker"
-deep_clean "/media/iguana/8a9bf0f0-ba62-4a8d-879e-d46db7eaa8b3/home/iguana/projects/java/tts-voicetrain/dataset-library/uncleruc/wav48_silence_trimmed/p001" "audio/art-clean"
+deep_clean "wav48_silence_trimmed/p001" "audio/clean"
 #normalize "audio/2speaker-deepfilter" "audio/3normalize"
 #cut_music "audio/3normalize/"
 #whisper "audio/3normalize"
