@@ -7,8 +7,8 @@ This Bash script defines a series of functions to process audio files using vari
 
 1. **MP3 to WAV Conversion**: Converts MP3 files to WAV format. This creates a segmented output so the wav files can be processed in memeory.
 2. **Deep Cleaning**: Cleans the audio using deep filtering techniques.
-3. **Speaker Identification**: Identifies speakers in the audio (can target individual speaker with embedding).
-4. **Music Cutting**: Cuts the music from the audio using Demucs separation and noise removal.
+3. **Extract Samples**: Extracts audio samples from the segmented WAVs (can target individual speaker with embedding).
+4. **Music Cutting**: Checks samples for background noise/music, using Demucs separation and noise removal.
 5. **Whisper**: Transcribes audio.
 6. **Dataset Preparation for Speaker**: Prepares the audio dataset for training a speaker model (VCTK formatted).
 7. **Normalization**: Normalizes the audio volume.
