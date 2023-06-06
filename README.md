@@ -5,7 +5,7 @@ MP3 -> Dataset pipeline
 
 This Bash script defines a series of functions to process audio files using various Python scripts. The pipeline performs the following operations:
 
-1. **MP3 to WAV Conversion**: Converts MP3 files to WAV format.
+1. **MP3 to WAV Conversion**: Converts MP3 files to WAV format. This creates a segmented output so the wav files can be processed in memeory.
 2. **Deep Cleaning**: Cleans the audio using deep filtering techniques.
 3. **Speaker Identification**: Identifies speakers in the audio (can target individual speaker with embedding).
 4. **Music Cutting**: Cuts the music from the audio using Demucs separation and noise removal.
