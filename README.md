@@ -10,7 +10,7 @@ This Bash script defines a series of functions to process audio files using vari
 3. **Speaker Identification**: Identifies speakers in the audio (can target individual speaker with embedding).
 4. **Music Cutting**: Cuts the music from the audio using Demucs separation and noise removal.
 5. **Whisper**: Transcribes audio.
-6. **Dataset Preparation for Speaker**: Prepares the audio dataset for training a speaker model.
+6. **Dataset Preparation for Speaker**: Prepares the audio dataset for training a speaker model (VCTK formatted).
 7. **Normalization**: Normalizes the audio volume.
 8. **FLAC Conversion**: Converts audio files to FLAC format.
 9. **VCTK Normalization and Trimming**: Normalizes and trims VCTK audio files.
